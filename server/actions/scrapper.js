@@ -1,24 +1,19 @@
-import { chromium } from 'playwright';
-
-export async function getImageSrc(pageUrl) {
-  // Launch browser
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
-  
+export async function getImageSrc(reelUrl) {
   try {
-    // Navigate to the page
-    await page.goto(pageUrl);
-    
-    // Wait for the specific img tag and get its src
-    const imgSrc = await page.locator('img.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x5yr21d.xl1xv1r.xh8yej3[referrerpolicy="origin-when-cross-origin"][alt=""]').getAttribute('src');
-    
-    // Return the src
-    return imgSrc;
+    // Ensure the server is running on localhost:3000 or your configured port
+    const apiUrl = `http://localhost:8000/api/image-src?pageUrl=${encodeURIComponent(reelUrl)}`;
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.imageUrl; // This is the scraped image source URL
+
   } catch (error) {
-    console.error('Error:', error);
-    return null;
-  } finally {
-    // Close browser
-    await browser.close();
+    console.error('Failed to fetch image:', error);
+    // Handle error appropriately in your frontend application
   }
 }
